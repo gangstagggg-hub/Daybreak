@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+}
+
+def versionProps = new Properties()
+file('../version.properties').withInputStream { versionProps.load(it) }
+def codeBase = versionProps.getProperty('VERSION_CODE_BASE', '0').toInteger()
+def runNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+
+android {
+    namespace 'io.github.gangstagggg.daybreak'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'io.github.gangstagggg.daybreak'
+        minSdk 29
+        targetSdk 36
+        versionCode codeBase + runNumber
+        versionName versionProps.getProperty('VERSION_NAME', '1.0')
+    }
+
+    // Nøkkelen kommer fra GitHub-hemmeligheter (se .github/workflows/android.yml).
+    // Uten nøkkel bygges en usignert versjon, som er greit for lokale tester.
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv('KEYSTORE_PATH')
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('KEYSTORE_PATH')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    // Webappen ligger i mappen web/ og pakkes inn i appen som filer.
+    sourceSets {
+        main {
+            assets.srcDirs = ['../web']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.activity:activity:1.10.1'
+    implementation 'androidx.core:core:1.15.0'
+}

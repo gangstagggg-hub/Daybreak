@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Daybreak</title>
+<meta name="theme-color" content="#0b1d24">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --bg:#fbf6e9;--surf:#fffdf7;--surf2:#f3eedd;--ink:#13313a;--mut:#6b7f80;--line:rgba(19,49,58,.1);
+  --glow:rgba(255,205,120,.5);--acc:#2f7f78;--accInk:#fff;--danger:#c4513f;
+  --shadow:0 1px 2px rgba(19,49,58,.05),0 12px 32px -14px rgba(19,49,58,.22);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Noto Serif",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --ease:cubic-bezier(.22,.8,.24,1);
+}
+[data-theme=dark]{
+  --bg:#0b1d24;--surf:#12303a;--surf2:#18404c;--ink:#f1ecd9;--mut:#8fa9a8;--line:rgba(241,236,217,.1);
+  --glow:rgba(127,195,176,.2);--acc:#7fc3b0;--accInk:#08222a;--danger:#ef8a78;
+  --shadow:0 12px 32px -14px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:var(--sans);color:var(--ink);background:radial-gradient(130% 55% at 50% -12%,var(--glow),transparent 62%),var(--bg);background-attachment:fixed;overscroll-behavior-y:none;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input,textarea{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+#app{min-height:100%;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 110px);max-width:560px;margin:0 auto}
+.enter{animation:enter .45s var(--ease) both}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.icon-btn{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--surf);box-shadow:var(--shadow);transition:transform .2s var(--ease)}
+.icon-btn:active{transform:scale(.92)}
+.icon-btn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* hjem */
+.top{display:flex;align-items:flex-end;justify-content:space-between;margin:6px 2px 22px}
+.hi{color:var(--mut);font-size:14px;margin-bottom:2px}
+.top h1{font-family:var(--serif);font-size:38px;font-weight:600;letter-spacing:-.02em}
+.list{display:grid;gap:12px}
+.card{display:flex;align-items:center;gap:16px;padding:16px;background:var(--surf);border-radius:24px;box-shadow:var(--shadow);cursor:pointer;transition:transform .25s var(--ease);animation:enter .5s var(--ease) both}
+.card:active{transform:scale(.975)}
+.ringwrap{position:relative;width:84px;height:84px;flex:none}
+.ringwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.trk{fill:none;stroke:var(--surf2);stroke-width:7}
+.prg{fill:none;stroke:var(--c,var(--acc));stroke-width:7;stroke-linecap:round;stroke-dasharray:289.03;stroke-dashoffset:289.03;transition:stroke-dashoffset 1s var(--ease)}
+.ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ringtxt b{font-family:var(--serif);font-size:26px;font-weight:600;line-height:1}
+.ringtxt span{font-size:11px;color:var(--mut);margin-top:3px}
+.meta{flex:1;min-width:0}
+.meta h3{font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta p{color:var(--mut);font-size:14px;margin-top:3px}
+.badge[hidden]{display:none}
+.badge{display:inline-block;margin-top:7px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:color-mix(in srgb,var(--c,var(--acc)) 22%,transparent);color:var(--ink)}
+.chev{width:18px;height:18px;stroke:var(--mut);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.empty{text-align:center;padding:36px 12px}
+.empty img{width:112px;height:112px;border-radius:30px;box-shadow:var(--shadow);margin-bottom:22px}
+.empty h2{font-family:var(--serif);font-size:26px;margin-bottom:8px}
+.empty p{color:var(--mut);line-height:1.5;margin-bottom:24px}
+.fab{position:fixed;right:max(20px,calc(50% - 260px));bottom:calc(env(safe-area-inset-bottom) + 22px);width:62px;height:62px;border-radius:22px;background:var(--acc);color:var(--accInk);display:grid;place-items:center;box-shadow:0 14px 28px -10px color-mix(in srgb,var(--acc) 70%,#000);transition:transform .25s var(--ease);z-index:5}
+.fab:active{transform:scale(.9)}
+.fab svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;fill:none}
+
+/* knapper */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:18px;font-weight:600;font-size:16px;background:var(--acc);color:var(--accInk);transition:transform .2s var(--ease),opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn.ghost{background:var(--surf);color:var(--ink);box-shadow:var(--shadow)}
+.btn.soft{background:var(--surf2);color:var(--ink)}
+.btn.danger{background:transparent;color:var(--danger);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--danger) 40%,transparent)}
+
+/* detalj */
+.dtop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 8px}
+.dtop h2{font-family:var(--serif);font-size:24px;font-weight:600;text-align:center;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero{position:relative;width:min(72vw,280px);aspect-ratio:1;margin:14px auto 6px}
+.hero svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.hero .trk{stroke-width:5}.hero .prg{stroke-width:5;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--c) 45%,transparent))}
+.hero .ringtxt b{font-size:clamp(56px,20vw,84px);letter-spacing:-.03em}
+.hero .ringtxt span{font-size:14px}
+.hero .ringtxt small{font-variant-numeric:tabular-nums;color:var(--mut);margin-top:12px;font-size:15px;letter-spacing:.04em}
+.since{text-align:center;color:var(--mut);font-size:13.5px;margin-bottom:20px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.tile{background:var(--surf);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
+.tile small{display:block;color:var(--mut);font-size:12.5px;margin-bottom:5px}
+.tile b{font-family:var(--serif);font-size:21px;font-weight:600}
+.bar{height:6px;border-radius:9px;background:var(--surf2);overflow:hidden;margin:0 0 18px}
+.bar i{display:block;height:100%;width:0;border-radius:9px;background:var(--c);transition:width 1s var(--ease)}
+.recnote{text-align:center;font-size:13.5px;margin:-6px 0 16px;color:var(--ink)}
+.actions{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-bottom:22px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surf2);border-radius:16px;padding:4px;margin-bottom:16px;position:relative}
+.seg button{padding:10px 4px;border-radius:12px;font-size:14.5px;font-weight:600;color:var(--mut);transition:all .25s var(--ease);position:relative;z-index:1}
+.seg button.on{background:var(--surf);color:var(--ink);box-shadow:var(--shadow)}
+.panel{animation:enter .35s var(--ease) both}
+.entry{background:var(--surf);border-radius:20px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.entry .h{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mut);margin-bottom:6px}
+.entry .h .mo{font-size:19px}
+.tag{padding:2px 9px;border-radius:99px;background:var(--surf2);font-size:11.5px;font-weight:600;color:var(--ink)}
+.entry .h .x{margin-left:auto;color:var(--mut);padding:4px 6px;font-size:13px}
+.entry p{line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.entry.muted p{color:var(--mut);font-style:italic}
+.hint{color:var(--mut);text-align:center;padding:28px 18px;line-height:1.55}
+.chart{display:flex;align-items:flex-end;gap:7px;height:130px;padding:14px 14px 0;background:var(--surf);border-radius:22px;box-shadow:var(--shadow);margin-bottom:14px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.col .b{width:100%;max-width:26px;border-radius:8px 8px 4px 4px;background:color-mix(in srgb,var(--c) 38%,var(--surf2));height:var(--h);min-height:4px;transform-origin:bottom;animation:grow .8s var(--ease) both}
+.col.best .b{background:var(--c)}
+.col.cur .b{background:repeating-linear-gradient(135deg,var(--c) 0 5px,color-mix(in srgb,var(--c) 60%,transparent) 5px 10px)}
+.col span{font-size:10.5px;color:var(--mut);padding:5px 0 7px;white-space:nowrap}
+@keyframes grow{from{transform:scaleY(0)}to{transform:none}}
+.sec{font-size:13px;font-weight:600;color:var(--mut);margin:18px 4px 8px;letter-spacing:.02em}
+.row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--surf);border-radius:18px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s var(--ease)}
+.row:active{transform:scale(.98)}
+.row .n{width:30px;height:30px;border-radius:10px;background:var(--surf2);display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.row .t{flex:1;min-width:0}.row .t b{display:block;font-size:15px}.row .t span{font-size:12.5px;color:var(--mut)}
+.row .v{font-family:var(--serif);font-weight:600;white-space:nowrap}
+.prog{background:var(--surf);border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.prog p{color:var(--mut);font-size:14px;line-height:1.5;margin-bottom:12px}
+.dots{display:flex;gap:6px;margin-bottom:14px}.dots i{flex:1;height:6px;border-radius:9px;background:var(--surf2)}.dots i.on{background:var(--c)}
+.insight{background:var(--surf);border-radius:22px;padding:18px 18px 16px;margin-bottom:12px;box-shadow:var(--shadow);border-left:4px solid var(--c)}
+.insight h4{margin:0 0 7px;font-family:var(--serif);font-size:18px}
+.insight p{line-height:1.6;font-size:15px}
+.insight.hl{background:color-mix(in srgb,var(--c) 14%,var(--surf))}
+.insight.note{border-left-color:var(--line);box-shadow:none;background:transparent;padding:6px 6px}
+.insight.note p{color:var(--mut);font-size:13px}
+.skel{height:92px;border-radius:22px;margin-bottom:12px;background:linear-gradient(100deg,var(--surf) 30%,var(--surf2) 50%,var(--surf) 70%);background-size:200% 100%;animation:sh 1.1s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.stamp{text-align:center;color:var(--mut);font-size:12.5px;margin:4px 0 14px}
+
+/* sheet */
+#scrim{position:fixed;inset:0;background:rgba(5,16,20,.5);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:20}
+#sheet{position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;max-height:90vh;overflow-y:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:10px 20px calc(env(safe-area-inset-bottom) + 22px);transform:translateY(105%);transition:transform .42s var(--ease);z-index:21;box-shadow:0 -20px 60px -20px rgba(0,0,0,.4)}
+.open #scrim{opacity:1;pointer-events:auto}.open #sheet{transform:none}
+.grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+#sheet h3{font-family:var(--serif);font-size:24px;margin-bottom:6px}
+#sheet .sub{color:var(--mut);font-size:14.5px;line-height:1.5;margin-bottom:16px}
+label.l{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:16px 2px 7px}
+.in{width:100%;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--surf);outline:none;transition:border-color .2s}
+.in:focus{border-color:var(--acc)}
+textarea.in{min-height:96px;resize:vertical;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{padding:7px 13px;border-radius:99px;background:var(--surf2);font-size:14px;transition:transform .15s}.chip:active{transform:scale(.93)}
+.swatches{display:flex;gap:11px;flex-wrap:wrap}
+.sw{width:34px;height:34px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 0 var(--bg);transition:box-shadow .2s var(--ease),transform .2s}
+.sw.on{box-shadow:inset 0 0 0 3px var(--bg),0 0 0 2.5px var(--c);transform:scale(1.08)}
+.moods{display:flex;gap:8px}
+.mood{flex:1;padding:10px 0;font-size:25px;border-radius:15px;background:var(--surf2);filter:grayscale(.85);opacity:.7;transition:all .2s var(--ease)}
+.mood.on{filter:none;opacity:1;background:var(--surf);box-shadow:0 0 0 2px var(--acc);transform:translateY(-2px)}
+.err{color:var(--danger);font-size:13.5px;min-height:20px;margin:10px 2px 0}
+.btns{display:grid;gap:10px;margin-top:18px}
+.btns.two{grid-template-columns:1fr 1.5fr}
+.step{display:none}.step.on{display:block;animation:enter .35s var(--ease) both}
+.sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.sw-row b{display:block;font-size:15.5px}.sw-row span{font-size:13px;color:var(--mut)}
+.tog{width:52px;height:30px;border-radius:99px;background:var(--surf2);position:relative;transition:background .25s;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .3s var(--ease)}
+.tog.on{background:var(--acc)}.tog.on::after{transform:translateX(22px)}
+.pill{display:inline-flex;background:var(--surf2);border-radius:13px;padding:3px}.pill button{padding:7px 13px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--mut)}.pill button.on{background:var(--surf);color:var(--ink);box-shadow:var(--shadow)}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:99px;font-size:14.5px;font-weight:500;opacity:0;pointer-events:none;transition:all .4s var(--ease);z-index:40;max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.conf{position:fixed;top:-12px;width:9px;height:14px;border-radius:2px;z-index:50;pointer-events:none;animation:fall 2.6s ease-in forwards}
+@keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r));opacity:.9}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="root-ui">
+  <div id="scrim"></div>
+  <div id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheetBody"></div></div>
+</div>
+<div id="toast"></div>
+<script src="core.js"></script>
+<script>
+(function () {
+'use strict';
+var C = Core, DAY = C.DAY, KEY = 'daybreak_v1';
+var NATIVE = !!window.AndroidBridge; // true inside the Android app (WebView)
+var COLORS = ['#3f8f86', '#86b07a', '#e5b567', '#e07a5f', '#6aa6d6', '#a08bd0', '#d97b9a'];
+var MOODS = ['😞', '😕', '😐', '🙂', '😄'];
+var SUGG = ['Smoking', 'Snus', 'Alcohol', 'Sugar', 'Social media', 'Gaming', 'Caffeine', 'Shopping'];
+var TYPE_LABEL = { start: 'New start', relapse: 'After relapse', note: 'Note' };
+var CIRC = 289.03;
+
+function $(s, r) { return (r || document).querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36); }
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function toInput(ts) { var d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+function fmtDate(ts) { return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+function fmtDT(ts) { var d = new Date(ts); return fmtDate(ts) + ' at ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+/* ---------- data ---------- */
+var S = load();
+function defaults() { return { v: 1, items: [], settings: { theme: 'auto', notif: { on: false, time: '08:00' } } }; }
+function load() {
+  try { var r = localStorage.getItem(KEY); if (r) { var d = JSON.parse(r); if (d && d.items) { d.settings = d.settings || defaults().settings; d.settings.notif = d.settings.notif || { on: false, time: '08:00' }; return d; } } } catch (e) {}
+  return defaults();
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save. Storage is full.'); }
+  C.idbSet('snap', JSON.parse(JSON.stringify(S))).catch(function () {});
+  scheduleNative();
+}
+function item(id) { for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return S.items[i]; return null; }
+
+/* ---------- tema ---------- */
+var mq = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  var t = S.settings.theme, dark = t === 'dark' || (t === 'auto' && mq.matches);
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  var m = $('meta[name=theme-color]'); if (m) m.setAttribute('content', dark ? '#0b1d24' : '#fbf6e9');
+}
+(mq.addEventListener ? mq.addEventListener('change', applyTheme) : mq.addListener(applyTheme));
+applyTheme();
+
+/* ---------- toast + konfetti ---------- */
+var toastT;
+function toast(msg) { var t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('on'); }, 3200); }
+function confetti() {
+  var cols = ['#e5b567', '#3f8f86', '#86b07a', '#e07a5f', '#6aa6d6', '#fff'];
+  for (var i = 0; i < 46; i++) {
+    var e = document.createElement('i'); e.className = 'conf';
+    e.style.left = (Math.random() * 100) + 'vw'; e.style.background = cols[i % cols.length];
+    e.style.setProperty('--dx', ((Math.random() - .5) * 160) + 'px'); e.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+    e.style.animationDelay = (Math.random() * .5) + 's'; e.style.animationDuration = (2 + Math.random() * 1.6) + 's';
+    document.body.appendChild(e); setTimeout(function (x) { x.remove(); }.bind(null, e), 4600);
+  }
+}
+
+/* ---------- navigation + sheet ---------- */
+var view = { name: 'home' }, sheetOpen = false;
+function openSheet(html, mount) {
+  $('#sheetBody').innerHTML = html;
+  $('#sheet').scrollTop = 0;
+  if (!sheetOpen) { sheetOpen = true; if (!NATIVE) { try { history.pushState({ s: 1 }, ''); } catch (e) {} } }
+  document.documentElement.classList.add('open');
+  if (mount) mount();
+}
+function hideSheet() { sheetOpen = false; document.documentElement.classList.remove('open'); }
+function closeSheet() { if (!sheetOpen) return; if (!NATIVE && history.state && history.state.s) history.back(); else hideSheet(); }
+window.addEventListener('popstate', function () {
+  if (sheetOpen) { hideSheet(); return; }
+  if (view.name === 'detail') goHome();
+});
+$('#scrim').addEventListener('click', closeSheet);
+function goHome() { view = { name: 'home' }; render(); window.scrollTo(0, 0); }
+function goDetail(id) {
+  view = { name: 'detail', id: id, tab: 'dagbok' };
+  if (!NATIVE) { try { history.pushState({ v: 'detail' }, ''); } catch (e) {} }
+  render(); window.scrollTo(0, 0);
+}
+function back() { if (!NATIVE && history.state && history.state.v === 'detail') history.back(); else goHome(); }
+/* Android back button: handle sheets and the detail view, otherwise let the app close */
+window.onAndroidBack = function () {
+  if (sheetOpen) { hideSheet(); return true; }
+  if (view.name === 'detail') { goHome(); return true; }
+  return false;
+};
+
+/* ---------- view helpers ---------- */
+function greet() { var h = new Date().getHours(); return h < 5 ? 'Good night' : h < 10 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 22 ? 'Good evening' : 'Good night'; }
+function subText(st) {
+  if (st.kind === 'toRecord') return C.fmt(st.remaining) + ' to a new record';
+  if (st.kind === 'record') return 'The record moves up every day';
+  return 'Next goal: ' + Math.round(st.target / DAY) + ' d';
+}
+function tileTwo(st) {
+  if (st.kind === 'toRecord') return ['To a new record', C.fmt(st.remaining)];
+  if (st.kind === 'record') return ['Above previous record', '+' + C.fmt(st.curLen - st.bestPrior)];
+  return ['To next goal (' + Math.round(st.target / DAY) + ' d)', C.fmt(st.remaining)];
+}
+var CHEV = '<svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+var GEAR = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>';
+var BACK = '<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>';
+var PEN = '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>';
+
+function ringSvg(id, extra) {
+  return '<svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="46"/><circle class="prg" data-bind="ring:' + id + '" cx="50" cy="50" r="46"/></svg>' + (extra || '');
+}
+
+/* ---------- render ---------- */
+function render() {
+  var app = $('#app');
+  if (view.name === 'home') app.innerHTML = renderHome();
+  else { var a = item(view.id); if (!a) { view = { name: 'home' }; app.innerHTML = renderHome(); } else app.innerHTML = renderDetail(a); }
+  live(true);
+}
+function renderHome() {
+  var h = '<div class="top enter"><div><p class="hi">' + greet() + '</p><h1>Daybreak</h1></div><button class="icon-btn" data-act="settings" aria-label="Settings">' + GEAR + '</button></div>';
+  if (!S.items.length) {
+    h += '<div class="empty enter"><img src="icon-192.png" alt=""><h2>A new day begins</h2><p>Add something you want to quit.<br>Daybreak counts the days, helps you beat your records and understand what it does to you.</p><button class="btn" data-act="add">Add an addiction</button></div>';
+  } else {
+    h += '<div class="list">' + S.items.map(function (a, i) {
+      return '<article class="card" data-act="open" data-id="' + a.id + '" style="--c:' + a.color + ';animation-delay:' + (i * 60) + 'ms">' +
+        '<div class="ringwrap">' + ringSvg(a.id, '<div class="ringtxt"><b data-bind="days:' + a.id + '">0</b><span>days</span></div>') + '</div>' +
+        '<div class="meta"><h3>' + esc(a.name) + '</h3><p data-bind="sub:' + a.id + '"></p><span class="badge" data-bind="badge:' + a.id + '" hidden>🏆 Record</span></div>' + CHEV + '</article>';
+    }).join('') + '</div>';
+    h += '<button class="fab" data-act="add" aria-label="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>';
+  }
+  return h;
+}
+function renderDetail(a) {
+  var st = C.stats(a, Date.now()), t2 = tileTwo(st), tab = view.tab;
+  var h = '<div style="--c:' + a.color + '">';
+  h += '<div class="dtop enter"><button class="icon-btn" data-act="back" aria-label="Back">' + BACK + '</button><h2>' + esc(a.name) + '</h2><button class="icon-btn" data-act="edit" aria-label="Edit">' + PEN + '</button></div>';
+  h += '<div class="hero enter">' + ringSvg(a.id, '<div class="ringtxt"><b data-bind="days:' + a.id + '">0</b><span>days</span><small data-bind="hms:' + a.id + '">00 : 00 : 00</small></div>') + '</div>';
+  h += '<p class="since enter">Since ' + fmtDT(st.cur.start) + '</p>';
+  h += '<div class="tiles enter"><div class="tile"><small>Record</small><b data-bind="best:' + a.id + '"></b></div><div class="tile"><small data-bind="t2l:' + a.id + '">' + t2[0] + '</small><b data-bind="t2v:' + a.id + '">' + t2[1] + '</b></div></div>';
+  h += '<div class="bar enter"><i data-bind="bar:' + a.id + '"></i></div>';
+  if (st.isRecord) h += '<p class="recnote">🏆 New record since ' + fmtDT(st.recordSetAt) + '</p>';
+  h += '<div class="actions enter"><button class="btn" data-act="newperiod">New period</button><button class="btn ghost" data-act="comment">Comment</button></div>';
+  h += '<div class="seg">' + [['dagbok', 'Journal'], ['perioder', 'Periods'], ['analyse', 'Analysis']].map(function (t) { return '<button data-act="tab" data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>';
+  h += '<div class="panel" id="panel">' + (tab === 'dagbok' ? panelDagbok(a) : tab === 'perioder' ? panelPerioder(a) : panelAnalyse(a)) + '</div></div>';
+  return h;
+}
+function dayOf(a, c) {
+  var p = a.periods.filter(function (x) { return x.id === c.periodId; })[0]; if (!p) return '';
+  var d = c.type === 'relapse' ? C.plen(p, Date.now()) / DAY : c.type === 'start' ? 0 : (c.ts - p.start) / DAY;
+  return c.type === 'start' ? '' : 'day ' + Math.floor(d);
+}
+function panelDagbok(a) {
+  if (!a.comments.length) return '<div class="hint">No comments yet.<br>Write how you are feeling. This is what the analysis is built on.</div>';
+  return a.comments.slice().sort(function (x, y) { return y.ts - x.ts; }).map(function (c) {
+    return '<div class="entry"><div class="h"><span class="mo">' + (c.mood ? MOODS[c.mood - 1] : '📝') + '</span><span class="tag">' + TYPE_LABEL[c.type] + '</span><span>' + fmtDate(c.ts) + (dayOf(a, c) ? ' · ' + dayOf(a, c) : '') + '</span><button class="x" data-act="delc" data-cid="' + c.id + '" aria-label="Delete">✕</button></div>' +
+      (c.text ? '<p>' + esc(c.text) + '</p>' : '<p style="color:var(--mut)">Mood only</p>') + '</div>';
+  }).join('');
+}
+function panelPerioder(a) {
+  var now = Date.now(), ps = C.sorted(a), st = C.stats(a, now), vis = ps.slice(-14);
+  var max = Math.max.apply(null, vis.map(function (p) { return C.plen(p, now); })) || 1;
+  var bestId = null, bl = -1; ps.forEach(function (p) { var l = C.plen(p, now); if (l >= bl) { bl = l; bestId = p.id; } });
+  var h = '<div class="chart">' + vis.map(function (p) {
+    var l = C.plen(p, now), d = Math.floor(l / DAY);
+    return '<div class="col' + (p.id === bestId ? ' best' : '') + (p.end == null ? ' cur' : '') + '"><div class="b" style="--h:' + Math.max(3, Math.round(l / max * 100)) + '%"></div><span>' + (d < 1 ? '<1' : d) + ' d</span></div>';
+  }).join('') + '</div>';
+  var rh = C.recordHistory(a, now);
+  if (rh.length) {
+    h += '<div class="sec">Record history</div>' + rh.slice().reverse().map(function (r) {
+      return '<div class="row" style="cursor:default"><div class="n">🏆</div><div class="t"><b>' + (r.ongoing ? 'Ongoing' : fmtDate(r.period.start)) + '</b><span>' + (r.setAt ? 'New record set ' + fmtDT(r.setAt) : 'First period') + '</span></div><div class="v">' + C.fmt(r.length) + '</div></div>';
+    }).join('');
+  }
+  h += '<div class="sec">All periods</div>' + ps.slice().reverse().map(function (p, i) {
+    var n = ps.length - i, l = C.plen(p, now);
+    return '<div class="row" data-act="editp" data-pid="' + p.id + '"><div class="n">' + n + '</div><div class="t"><b>' + fmtDate(p.start) + ' → ' + (p.end == null ? 'ongoing' : fmtDate(p.end)) + '</b><span>' + (p.id === bestId ? '🏆 Longest period' : p.end == null ? 'Current' : 'Ended') + '</span></div><div class="v">' + C.fmt(l) + '</div></div>';
+  }).join('');
+  return h;
+}
+var analyzing = false;
+function panelAnalyse(a) {
+  var n = a.comments.length, min = C.ANALYSIS_MIN, h = '';
+  if (analyzing) return '<div class="skel"></div><div class="skel"></div><div class="skel" style="height:130px"></div>';
+  if (n < min) {
+    h += '<div class="prog"><div class="dots">' + Array.apply(null, Array(min)).map(function (_, i) { return '<i class="' + (i < n ? 'on' : '') + '"></i>'; }).join('') + '</div><p>Write ' + (min - n) + ' more comment' + (min - n === 1 ? '' : 's') + ' to unlock the analysis. The more you write about how you feel, the better it gets.</p><button class="btn" disabled>Analyse</button></div>';
+    return h;
+  }
+  if (a.analysis) {
+    var fresh = n - a.analysis.n;
+    h += '<p class="stamp">Based on ' + a.analysis.n + ' comments · ' + fmtDate(a.analysis.at) + '</p>';
+    h += a.analysis.sections.map(function (s) { return '<div class="insight' + (s.highlight ? ' hl' : '') + (s.note ? ' note' : '') + '">' + (s.note ? '' : '<h4>' + esc(s.title) + '</h4>') + '<p>' + esc(s.body) + '</p></div>'; }).join('');
+    h += '<button class="btn ' + (fresh > 0 ? '' : 'soft') + '" data-act="analyze">' + (fresh > 0 ? 'Update analysis (' + fresh + ' new)' : 'Analyse again') + '</button>';
+  } else {
+    h += '<div class="prog"><div class="dots">' + Array.apply(null, Array(min)).map(function () { return '<i class="on"></i>'; }).join('') + '</div><p>You have ' + n + ' comments. Daybreak reads them and explains what ' + esc(a.name) + ' seems to do to you.</p><button class="btn" data-act="analyze">Analyse</button></div>';
+  }
+  return h;
+}
+
+/* ---------- live updates ---------- */
+var cache = {};
+function setT(bind, v) {
+  var els = document.querySelectorAll('[data-bind="' + bind + '"]'); v = String(v);
+  for (var i = 0; i < els.length; i++) if (els[i].textContent !== v) els[i].textContent = v;
+}
+function live(first) {
+  var now = Date.now(), rerender = false;
+  S.items.forEach(function (a) {
+    if (!C.curPeriod(a)) return;
+    var st = C.stats(a, now), p = C.parts(st.curLen), id = a.id, key = st.kind + st.isRecord;
+    if (!first && cache[id] && cache[id] !== key) rerender = true;
+    cache[id] = key;
+    setT('days:' + id, p.d); setT('sub:' + id, subText(st));
+    setT('hms:' + id, pad(p.h) + ' : ' + pad(p.m) + ' : ' + pad(p.s));
+    setT('best:' + id, C.fmt(st.best));
+    var t2 = tileTwo(st); setT('t2l:' + id, t2[0]); setT('t2v:' + id, t2[1]);
+    var r = document.querySelectorAll('[data-bind="ring:' + id + '"]');
+    for (var i = 0; i < r.length; i++) r[i].style.strokeDashoffset = (CIRC * (1 - st.progress)).toFixed(2);
+    var b = document.querySelectorAll('[data-bind="bar:' + id + '"]'); for (i = 0; i < b.length; i++) b[i].style.width = (st.progress * 100).toFixed(1) + '%';
+    var bd = document.querySelectorAll('[data-bind="badge:' + id + '"]'); for (i = 0; i < bd.length; i++) bd[i].hidden = !st.isRecord;
+    if (st.isRecord && a.recordSeen !== st.cur.id) {
+      a.recordSeen = st.cur.id; save(); confetti();
+      toast('🏆 New record for ' + a.name + '!');
+    }
+  });
+  if (rerender && !sheetOpen) render();
+}
+setInterval(function () { live(false); }, 1000);
+
+/* ---------- mood picker ---------- */
+function moodHtml(id) { return '<div class="moods" id="' + id + '">' + MOODS.map(function (m, i) { return '<button type="button" class="mood" data-mood="' + (i + 1) + '" aria-label="Mood ' + (i + 1) + ' of 5">' + m + '</button>'; }).join('') + '</div>'; }
+function bindMood(id) {
+  var el = $('#' + id);
+  el.addEventListener('click', function (e) {
+    var b = e.target.closest('.mood'); if (!b) return; var on = b.classList.contains('on');
+    el.querySelectorAll('.mood').forEach(function (x) { x.classList.remove('on'); }); if (!on) b.classList.add('on');
+  });
+}
+function getMood(id) { var b = $('#' + id + ' .mood.on'); return b ? +b.dataset.mood : null; }
+function mkComment(type, text, mood, periodId, ts) { return { id: uid(), ts: ts || Date.now(), type: type, text: (text || '').trim(), mood: mood || null, periodId: periodId }; }
+function swatches(sel) {
+  return '<div class="swatches" id="sws">' + COLORS.map(function (c) { return '<button type="button" class="sw' + (c === sel ? ' on' : '') + '" data-c="' + c + '" style="--c:' + c + '" aria-label="Colour"></button>'; }).join('') + '</div>';
+}
+function bindSwatches() { var el = $('#sws'); el.addEventListener('click', function (e) { var b = e.target.closest('.sw'); if (!b) return; el.querySelectorAll('.sw').forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); }); }
+function getColor() { var b = $('#sws .sw.on'); return b ? b.dataset.c : COLORS[0]; }
+function setErr(m) { var e = $('#err'); if (e) e.textContent = m || ''; }
+
+/* ---------- sheets ---------- */
+function addSheet() {
+  var now = Date.now();
+  openSheet('<h3>New addiction</h3><p class="sub">What do you want to quit, and when did you last do it?</p>' +
+    '<label class="l" for="fName">What is it?</label><input class="in" id="fName" maxlength="40" placeholder="E.g. Smoking" autocomplete="off">' +
+    '<div class="chips">' + SUGG.map(function (s) { return '<button type="button" class="chip" data-sugg="' + s + '">' + s + '</button>'; }).join('') + '</div>' +
+    '<label class="l" for="fStart">Last done</label><input class="in" type="datetime-local" id="fStart" value="' + toInput(now) + '" max="' + toInput(now) + '">' +
+    '<label class="l">Colour</label>' + swatches(COLORS[S.items.length % COLORS.length]) +
+    '<label class="l">How are you feeling right now? (optional)</label>' + moodHtml('m1') + '<textarea class="in" id="fCom" style="margin-top:10px" placeholder="Write a few words …"></textarea>' +
+    '<p class="err" id="err"></p><div class="btns"><button class="btn" id="go">Start</button></div>', function () {
+      bindMood('m1'); bindSwatches();
+      $('#sheetBody').querySelector('.chips').addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c) { $('#fName').value = c.dataset.sugg; } });
+      $('#go').onclick = function () {
+        var name = $('#fName').value.trim(), start = new Date($('#fStart').value).getTime();
+        if (!name) return setErr('Enter what it is.');
+        if (isNaN(start)) return setErr('Choose a valid time.');
+        if (start > Date.now() + 60000) return setErr('The time cannot be in the future.');
+        var p = { id: uid(), start: start, end: null };
+        var a = { id: uid(), name: name, color: getColor(), created: Date.now(), periods: [p], comments: [], analysis: null, recordSeen: null };
+        var txt = $('#fCom').value, mood = getMood('m1');
+        if (txt.trim() || mood) a.comments.push(mkComment('start', txt, mood, p.id));
+        S.items.push(a); save(); closeSheet(); render(); toast(name + ' added');
+      };
+    });
+}
+function editAddictionSheet(a) {
+  var cur = C.curPeriod(a);
+  openSheet('<h3>Edit</h3>' +
+    '<label class="l" for="fName">Name</label><input class="in" id="fName" maxlength="40" value="' + esc(a.name) + '">' +
+    '<label class="l" for="fStart">Start of the current period</label><input class="in" type="datetime-local" id="fStart" value="' + toInput(cur.start) + '" max="' + toInput(Date.now()) + '">' +
+    '<label class="l">Colour</label>' + swatches(a.color) + '<p class="err" id="err"></p>' +
+    '<div class="btns"><button class="btn" id="go">Save</button><button class="btn danger" id="del">Delete addiction</button></div>', function () {
+      bindSwatches();
+      $('#go').onclick = function () {
+        var name = $('#fName').value.trim(), ns = new Date($('#fStart').value).getTime();
+        if (!name) return setErr('Name cannot be empty.');
+        if (isNaN(ns)) return setErr('Choose a valid time.');
+        if (ns !== cur.start) { var e = setTimes(a, cur, ns, null); if (e) return setErr(e); a.recordSeen = null; }
+        a.name = name; a.color = getColor(); save(); closeSheet(); render(); toast('Saved');
+      };
+      $('#del').onclick = function () {
+        confirmSheet('Delete “' + a.name + '”?', 'All periods and comments for this addiction will be permanently deleted.', 'Delete', function () {
+          S.items = S.items.filter(function (x) { return x.id !== a.id; }); save(); hideSheet(); goHome(); toast('Deleted');
+        });
+      };
+    });
+}
+function confirmSheet(title, text, label, ok) {
+  openSheet('<h3>' + esc(title) + '</h3><p class="sub">' + esc(text) + '</p><div class="btns two"><button class="btn soft" id="no">Cancel</button><button class="btn danger" id="yes">' + esc(label) + '</button></div>', function () {
+    $('#no').onclick = closeSheet; $('#yes').onclick = function () { ok(); };
+  });
+}
+function commentSheet(a) {
+  openSheet('<h3>New comment</h3><p class="sub">How are you feeling right now? Write about your body, thoughts and cravings.</p>' + moodHtml('m1') +
+    '<textarea class="in" id="fCom" style="margin-top:12px" placeholder="Write here …"></textarea><p class="err" id="err"></p><div class="btns"><button class="btn" id="go">Save</button></div>', function () {
+      bindMood('m1');
+      $('#go').onclick = function () {
+        var t = $('#fCom').value, m = getMood('m1');
+        if (!t.trim() && !m) return setErr('Write something or pick a mood.');
+        a.comments.push(mkComment('note', t, m, C.curPeriod(a).id)); save(); closeSheet(); render(); toast('Comment saved');
+      };
+    });
+}
+function newPeriodSheet(a) {
+  var cur = C.curPeriod(a), now = Date.now(), len = C.fmt(C.plen(cur, now));
+  openSheet('<div class="step on" id="s1"><h3>New period</h3><p class="sub">The ' + len + ' period will end and a new one starts. That is okay. What happened?</p>' +
+    '<label class="l" for="fWhen">When did you do it?</label><input class="in" type="datetime-local" id="fWhen" value="' + toInput(now) + '" min="' + toInput(cur.start) + '" max="' + toInput(now) + '">' +
+    '<label class="l">How do you feel after doing it?</label>' + moodHtml('m1') + '<textarea class="in" id="fC1" style="margin-top:10px" placeholder="Be honest …"></textarea>' +
+    '<p class="err" id="err"></p><div class="btns"><button class="btn" id="next">Next</button></div></div>' +
+    '<div class="step" id="s2"><h3>A fresh start</h3><p class="sub">How do you feel now that you are starting again?</p>' + moodHtml('m2') +
+    '<textarea class="in" id="fC2" style="margin-top:12px" placeholder="What are you taking with you?"></textarea><div class="btns two"><button class="btn soft" id="prev">Back</button><button class="btn" id="go">Start new period</button></div></div>', function () {
+      bindMood('m1'); bindMood('m2');
+      $('#next').onclick = function () {
+        var t = new Date($('#fWhen').value).getTime();
+        if (isNaN(t)) return setErr('Choose a valid time.');
+        if (t <= cur.start) return setErr('Must be after the period started.');
+        if (t > Date.now() + 60000) return setErr('The time cannot be in the future.');
+        setErr(''); $('#s1').classList.remove('on'); $('#s2').classList.add('on'); $('#sheet').scrollTop = 0;
+      };
+      $('#prev').onclick = function () { $('#s2').classList.remove('on'); $('#s1').classList.add('on'); };
+      $('#go').onclick = function () {
+        var t = Math.min(new Date($('#fWhen').value).getTime(), Date.now());
+        var np = { id: uid(), start: t, end: null }, old = cur, ts = Date.now();
+        old.end = t; a.periods.push(np);
+        var t1 = $('#fC1').value, m1 = getMood('m1'), t2 = $('#fC2').value, m2 = getMood('m2');
+        if (t1.trim() || m1) a.comments.push(mkComment('relapse', t1, m1, old.id, ts));
+        if (t2.trim() || m2) a.comments.push(mkComment('start', t2, m2, np.id, ts + 1));
+        save(); closeSheet(); render(); toast('New period started');
+      };
+    });
+}
+function setTimes(a, p, ns, ne) {
+  var ps = C.sorted(a), i = ps.indexOf(p), prev = ps[i - 1], next = ps[i + 1], now = Date.now();
+  if (ns > now + 60000) return 'Start cannot be in the future.';
+  if (ne != null) { if (ne <= ns) return 'End must be after start.'; if (ne > now + 60000) return 'End cannot be in the future.'; }
+  var syncP = prev && prev.end === p.start, syncN = next && p.end != null && p.end === next.start;
+  if (prev) { if (syncP ? ns <= prev.start : ns < prev.end) return 'Start must be after the previous period starts.'; }
+  if (next && ne != null) { var nEnd = next.end == null ? now : next.end; if (syncN ? ne >= nEnd : ne > next.start) return 'End overlaps the next period.'; }
+  if (syncP) prev.end = ns; if (syncN) next.start = ne;
+  p.start = ns; p.end = ne; return null;
+}
+function editPeriodSheet(a, p) {
+  var done = p.end != null, now = Date.now();
+  openSheet('<h3>Edit period</h3><p class="sub">If you adjust the boundary between two periods, both move.</p>' +
+    '<label class="l" for="fS">Start</label><input class="in" type="datetime-local" id="fS" value="' + toInput(p.start) + '" max="' + toInput(now) + '">' +
+    (done ? '<label class="l" for="fE">End (when you did it again)</label><input class="in" type="datetime-local" id="fE" value="' + toInput(p.end) + '" max="' + toInput(now) + '">' : '') +
+    '<p class="err" id="err"></p><div class="btns"><button class="btn" id="go">Save</button>' + (done ? '<button class="btn danger" id="del">Delete period</button>' : '') + '</div>', function () {
+      $('#go').onclick = function () {
+        var ns = new Date($('#fS').value).getTime(), ne = done ? new Date($('#fE').value).getTime() : null;
+        if (isNaN(ns) || (done && isNaN(ne))) return setErr('Choose valid times.');
+        var e = setTimes(a, p, ns, ne); if (e) return setErr(e);
+        a.recordSeen = null; save(); closeSheet(); render(); toast('Saved');
+      };
+      if (done) $('#del').onclick = function () {
+        confirmSheet('Delete the period?', 'Comments are kept, but the period disappears from the history and records.', 'Delete', function () {
+          a.periods = a.periods.filter(function (x) { return x.id !== p.id; }); save(); closeSheet(); render(); toast('Period deleted');
+        });
+      };
+    });
+}
+
+/* ---------- notifications + settings ---------- */
+function notifState() {
+  if (NATIVE) return AndroidBridge.hasNotificationPermission() ? 'granted' : 'default';
+  if (!('Notification' in window)) return 'unsupported';
+  return Notification.permission;
+}
+async function fireMorning(force) {
+  var txt = C.morningText(S, Date.now()); if (!txt) return false;
+  if (NATIVE) { AndroidBridge.showNow(txt.title, txt.body); return true; }
+  var reg = await navigator.serviceWorker.ready;
+  await reg.showNotification(txt.title, { body: txt.body, icon: 'icon-192.png', badge: 'icon-192.png', tag: 'daybreak-morning' });
+  return true;
+}
+async function registerPeriodic() {
+  if (NATIVE) return;
+  try { var reg = await navigator.serviceWorker.ready; if ('periodicSync' in reg) await reg.periodicSync.register('daybreak-morning', { minInterval: 12 * 36e5 }); } catch (e) {}
+}
+async function catchUp() {
+  if (NATIVE) return;
+  var n = S.settings.notif;
+  if (!n.on || notifState() !== 'granted') return;
+  try {
+    var now = new Date(), t = now.getTime(), s = C.sched(now, n.time);
+    if (t < s || t > s + 8 * C.HOUR) return;
+    if ((await C.idbGet('last')) === C.dayKey(now)) return;
+    if (document.visibilityState !== 'visible') await fireMorning();
+    await C.idbSet('last', C.dayKey(now));
+  } catch (e) {}
+}
+function nativePerm() {
+  return new Promise(function (res) {
+    if (AndroidBridge.hasNotificationPermission()) return res('granted');
+    window.onNotifPermission = function (g) { res(g ? 'granted' : 'denied'); };
+    AndroidBridge.requestNotificationPermission();
+  });
+}
+/* Android app: hand the next 14 mornings (with finished texts) to native alarms */
+function scheduleNative() {
+  if (!NATIVE) return;
+  try {
+    var n = S.settings.notif;
+    if (!n.on || !AndroidBridge.hasNotificationPermission()) { AndroidBridge.cancelMorning(); return; }
+    var out = [], now = Date.now(), d = new Date();
+    for (var i = 0; i < 14; i++) {
+      var t = C.sched(new Date(d.getFullYear(), d.getMonth(), d.getDate() + i, 12), n.time);
+      if (t <= now + 30000) continue;
+      var tx = C.morningText(S, t); if (tx) out.push({ at: t, title: tx.title, body: tx.body });
+    }
+    AndroidBridge.scheduleMorning(JSON.stringify(out));
+  } catch (e) {}
+}
+var deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredInstall = e; });
+function settingsSheet() {
+  var n = S.settings.notif, ns = notifState(), th = S.settings.theme;
+  var nTxt = ns === 'unsupported' ? 'Not supported in this browser' : ns === 'denied' ? 'Blocked. Turn on notifications for Daybreak in your phone settings.' : 'One notification every morning on how far you are from your record';
+  openSheet('<h3>Settings</h3>' +
+    '<div class="sw-row"><div><b>Morning notification</b><span id="nTxt">' + nTxt + '</span></div><button class="tog' + (n.on && ns === 'granted' ? ' on' : '') + '" id="tog" aria-label="Morning notification"></button></div>' +
+    '<div class="sw-row" id="timeRow"' + (n.on && ns === 'granted' ? '' : ' style="display:none"') + '><div><b>Time</b></div><input class="in" type="time" id="fTime" value="' + n.time + '" style="width:130px"></div>' +
+    '<div class="sw-row" id="testRow"' + (n.on && ns === 'granted' ? '' : ' style="display:none"') + '><div><b>Test</b><span>Show the notification now</span></div><button class="chip" id="test">Send</button></div>' +
+    '<div class="sw-row"><div><b>Appearance</b></div><div class="pill" id="thm">' + [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (th === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div></div>' +
+    '<div class="sw-row"><div><b>Backup</b><span>Save or restore all data as a file</span></div><div style="display:flex;gap:8px"><button class="chip" id="exp">Export</button><button class="chip" id="imp">Import</button></div></div>' +
+    (deferredInstall ? '<div class="sw-row"><div><b>Install the app</b><span>Add Daybreak to your home screen</span></div><button class="chip" id="inst">Install</button></div>' : '') +
+    '<input type="file" id="file" accept="application/json,.json" hidden><p class="err" id="err"></p>', function () {
+      $('#tog').onclick = async function () {
+        var on = this.classList.contains('on');
+        if (on) { S.settings.notif.on = false; save(); this.classList.remove('on'); $('#timeRow').style.display = $('#testRow').style.display = 'none'; return; }
+        if (notifState() === 'unsupported') return setErr('Notifications are not supported here.');
+        var perm = NATIVE ? await nativePerm() : Notification.permission; if (!NATIVE && perm === 'default') perm = await Notification.requestPermission();
+        if (perm !== 'granted') { $('#nTxt').textContent = 'Permission was not granted.'; return; }
+        S.settings.notif.on = true; save(); this.classList.add('on'); $('#timeRow').style.display = $('#testRow').style.display = ''; registerPeriodic(); toast('Morning notification turned on');
+      };
+      $('#fTime').onchange = function () { S.settings.notif.time = this.value || '08:00'; save(); };
+      $('#test').onclick = function () { fireMorning().then(function (ok) { if (!ok) toast('Add an addiction first'); }).catch(function () { toast('Could not show notification'); }); };
+      $('#thm').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; S.settings.theme = b.dataset.t; save(); applyTheme(); this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); };
+      $('#exp').onclick = function () {
+        var json = JSON.stringify(S, null, 2), fname = 'daybreak-' + C.dayKey(new Date()) + '.json';
+        if (NATIVE) {
+          var b64 = btoa(unescape(encodeURIComponent(json)));
+          if (!AndroidBridge.saveFile(fname, 'application/json', b64)) toast('Could not save the file');
+          return;
+        }
+        var blob = new Blob([json], { type: 'application/json' }), u = URL.createObjectURL(blob), l = document.createElement('a');
+        l.href = u; l.download = fname; document.body.appendChild(l); l.click(); l.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 3000);
+      };
+      $('#imp').onclick = function () { $('#file').click(); };
+      $('#file').onchange = function () {
+        var f = this.files[0]; if (!f) return; var r = new FileReader();
+        r.onload = function () {
+          try {
+            var d = JSON.parse(r.result); if (!d || !Array.isArray(d.items)) throw 0;
+            confirmSheet('Replace all data?', 'The data in the app will be replaced with the contents of the file (' + d.items.length + ' addictions).', 'Import', function () {
+              S = d; S.settings = S.settings || defaults().settings; save(); applyTheme(); hideSheet(); goHome(); toast('Data imported');
+            });
+          } catch (e) { setErr('The file does not look like a Daybreak backup.'); }
+        }; r.readAsText(f);
+      };
+      if (deferredInstall) $('#inst').onclick = function () { deferredInstall.prompt(); deferredInstall = null; closeSheet(); };
+    });
+}
+
+/* ---------- events ---------- */
+$('#app').addEventListener('click', function (e) {
+  var el = e.target.closest('[data-act]'); if (!el) return;
+  var act = el.dataset.act, a = view.id ? item(view.id) : null;
+  if (act === 'open') goDetail(el.dataset.id);
+  else if (act === 'back') back();
+  else if (act === 'add') addSheet();
+  else if (act === 'settings') settingsSheet();
+  else if (act === 'edit' && a) editAddictionSheet(a);
+  else if (act === 'newperiod' && a) newPeriodSheet(a);
+  else if (act === 'comment' && a) commentSheet(a);
+  else if (act === 'tab') { view.tab = el.dataset.tab; render(); }
+  else if (act === 'delc' && a) confirmSheet('Delete the comment?', 'This cannot be undone.', 'Delete', function () { a.comments = a.comments.filter(function (c) { return c.id !== el.dataset.cid; }); save(); closeSheet(); render(); });
+  else if (act === 'editp' && a) { var p = a.periods.filter(function (x) { return x.id === el.dataset.pid; })[0]; if (p) editPeriodSheet(a, p); }
+  else if (act === 'analyze' && a) {
+    analyzing = true; render();
+    setTimeout(function () { a.analysis = C.analyze(a, Date.now()); analyzing = false; save(); render(); }, 1100);
+  }
+});
+
+/* ---------- start ---------- */
+render();
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { live(false); catchUp(); scheduleNative(); } });
+if (!NATIVE && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(function () { if (S.settings.notif.on) registerPeriodic(); }).catch(function () {});
+}
+catchUp();
+scheduleNative();
+})();
+</script>
+</body>
+</html>

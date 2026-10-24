@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bakgrunn bak webappen: vises i statuslinjen og mens siden lastes -->
+    <color name="app_background">#0b1d24</color>
+    <!-- Bakgrunn bak app-ikonet -->
+    <color name="ic_launcher_background">#002e3d</color>
+</resources>
